@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#
 # -*- mode: python; sh-basic-offset: 4; indent-tabs-mode: nil; coding: utf-8 -*-
 # vim: tabstop=4 softtabstop=4 expandtab shiftwidth=4 fileencoding=utf-8
 
@@ -10,11 +10,11 @@ import sys
 import urllib
 from xml.dom import minidom
 
-import nma
+from __init__ import NAME, VERSION
 
 
 BASE_URL = 'https://www.notifymyandroid.com/publicapi'
-#USER_AGENT = 'nma-python/v%s' % nma.VERSION
+USER_AGENT = 'nma-python/v%s' % VERSION
 
 
 class NMAPython(object):
@@ -217,6 +217,8 @@ class NMAPython(object):
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--version', action='version',
+        version='%s v%s' % (NAME, VERSION))
     parser.add_argument('--log-level', '-L', default='INFO',
         help='Log level to run this app with')
     parser.add_argument('--dev-key', '-D', help='Developer key')
