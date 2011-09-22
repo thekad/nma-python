@@ -10,10 +10,11 @@ import sys
 import urllib
 from xml.dom import minidom
 
+import nma
 
-VERSION  = 0.2
+
 BASE_URL = 'https://www.notifymyandroid.com/publicapi'
-USER_AGENT = 'nma-python/v%s' % VERSION
+#USER_AGENT = 'nma-python/v%s' % nma.VERSION
 
 
 class NMAPython(object):
