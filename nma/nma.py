@@ -85,7 +85,7 @@ class NMAPython(object):
 
         format='%(name)s: %(levelname)-8s %(message)s'
         logging.basicConfig(format=format)
-        self._log = logging.getLogger('nma')
+        self._log = logging.getLogger(USER_AGENT)
         self._log.setLevel(level)
 
     def _info(self, message):
@@ -113,9 +113,8 @@ class NMAPython(object):
         """
 
         method = method.upper()
-        ht = httplib2.Http()
         headers = {
-            'User-agent': USER_AGENT,
+            'user-agent': USER_AGENT,
         }
 
         if method == 'POST':
@@ -130,6 +129,7 @@ class NMAPython(object):
         if method == 'GET':
             url = '%s?%s' % (url, body)
         self._debug('Body is %s' % body)
+        ht = httplib2.Http()
         resp, content = ht.request(url, method, headers=headers, body=body)
 
         if content:
@@ -185,9 +185,9 @@ class NMAPython(object):
                 data['developerkey'] = self._dev_key
 
             if self._call(endpoint='notify', method='POST', data=data):
-                self._info('Message sent')
+                self._info('Message to API key %s... was sent' % api_key[:6])
             else:
-                self._error('Message could not be sent')
+                self._error('Message to API key %s... could not be sent' % api_key[:6])
 
     def verify(self, api_keys=[]):
         """
