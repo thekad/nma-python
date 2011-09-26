@@ -28,4 +28,9 @@ setuptools.setup(
         'Programming Language :: Python :: 2.6',
         'Topic :: Software Development :: Libraries',
     ],
+    entry_points = {
+        'console_scripts': [
+            'nma_cli = nma.nma:main'
+        ],
+    },
 )
