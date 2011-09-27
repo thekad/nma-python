@@ -148,7 +148,7 @@ class NMAPython(object):
                 self._return['message'] = ret.firstChild.data
                 self._debug('Error data: %s' % self._return)
                 if self._return['code'] == '402':
-                    self.error('%(message). Reset time: %(resettimer)')
+                    self._error('%(message). Reset time: %(resettimer)')
                 else:
                     self._error('An error was returned from the service: %(message)s' % self._return)
                 return False
