@@ -15,6 +15,13 @@ from __init__ import NAME, VERSION
 
 BASE_URL = 'https://www.notifymyandroid.com/publicapi'
 USER_AGENT = 'nma-python/v%s' % VERSION
+NOTIFY_LEVELS = {
+    '-2,low,FLAPPINGDISABLED,DOWNTIMECANCELLED': -2,
+    '-1,moderate,ACKNOWLEDGEMENT': -1,
+    '0,normal,RECOVERY,FLAPPINGSTOP,DOWNTIMESTOP': 0,
+    '1,high,FLAPPINGSTART,DOWNTIMESTART': 1,
+    '2,emergency,PROBLEM': 2,
+}
 
 
 class NMAPython(object):
@@ -31,13 +38,6 @@ class NMAPython(object):
         'ERROR': logging.ERROR,
         'FATAL': logging.FATAL,
         'WARN': logging.WARN,
-    }
-    _notify_levels = {
-        'low': -2,
-        'moderate': -1,
-        'normal': 0,
-        'high': 1,
-        'emergency': 2,
     }
 
     def __init__(self, api_keys=[], dev_key=None, log_level='INFO'):
@@ -172,6 +172,12 @@ class NMAPython(object):
         if len(message) > 10000:
             self._warn('The message length is > 10000, will be truncated')
 
+        level = 0
+        for k,v in NOTIFY_LEVELS.items():
+            if priority in k.split(','):
+                level = v
+                break
+
         for api_key in self._api_keys:
             self._debug('Sending notification with API key %s' % api_key)
             data = {
@@ -179,7 +185,7 @@ class NMAPython(object):
                 'application': application[:256].encode('utf8'),
                 'event': event[:1000].encode('utf8'),
                 'description': message[:10000].encode('utf8'),
-                'priority': self._notify_levels.get(priority, 0)
+                'priority': level,
             }
             if self._dev_key:
                 data['developerkey'] = self._dev_key
@@ -237,9 +243,14 @@ def main():
     parser_notify.add_argument('--event', '-e', required=True,
         help='The event that is been notified. Depending on your application, '
         'it can be a subject or a brief description')
+    choices = []
+    for k in NOTIFY_LEVELS.keys():
+        choices.extend(k.split(','))
     parser_notify.add_argument('--priority', '-p', default='normal',
-        choices=('low', 'moderate', 'normal', 'high', 'emergency'),
-        help='A priority level for this notification')
+        choices=choices,
+        help='A priority level for this notification. You can use numbers '
+        'from -2 to 2, or legends from low to emergency, or nagios-style '
+        'levels like PROBLEM, etc')
     parser_notify.add_argument('--message', '-m',
         help='Message to be sent', required=True)
 
