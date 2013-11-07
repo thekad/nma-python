@@ -131,11 +131,10 @@ class NMAPython(object):
         self._debug('Body is %s' % body)
         ht = httplib2.Http()
         resp, content = ht.request(url, method, headers=headers, body=body)
+        self._debug('Response headers: %s' % (resp,))
 
-        if content:
+        if int(resp['status']) == 200:
             content = minidom.parseString(content)
-            self._debug('Response is code=%(status)s, length=%(content-length)s, '
-                'type=%(content-type)s' % resp)
             ret = content.getElementsByTagName('success')
             if ret:
                 ret = ret[0]
@@ -153,8 +152,8 @@ class NMAPython(object):
                     self._error('An error was returned from the service: %(message)s' % self._return)
                 return False
         else:
-            self._debug(resp)
-            self._error('There seems to be an error when making the call')
+            self._error('There seems to be an error when making the call:')
+            self._error('Response: code=%(status)s, type=%(content-type)s' % resp)
 
     def notify(self, application, event, message, priority='normal'):
         """
@@ -203,7 +202,8 @@ class NMAPython(object):
                 (if there were any)
         """
 
-        for api_key in api_keys:
+        self._debug('Validating %s' % (self._api_keys,))
+        for api_key in self._api_keys:
             if self._valid_key(api_key):
                 self._api_keys.add(api_key)
             else:
@@ -214,7 +214,7 @@ class NMAPython(object):
             data = { 'apikey': api_key.encode('utf8'), }
             if self._dev_key:
                 data['developerkey'] = self._dev_key.encode('utf8')
-            if self._call(endpoint='verify', method='GET', data=data):
+            if self._call(endpoint='verify', method='POST', data=data):
                 self._info('The API key %s is valid' % api_key)
             else:
                 self._error('The API key %s is invalid' % api_key)
@@ -234,6 +234,7 @@ def main():
 
 #   verify
     parser_verify = subparsers.add_parser('verify')
+    assert parser_verify
 
 #   notify
     parser_notify = subparsers.add_parser('notify',
@@ -255,6 +256,10 @@ def main():
         help='Message to be sent', required=True)
 
     args = parser.parse_args()
+
+    if args.log_level == 'DEBUG':
+        httplib2.debuglevel=4
+
     nma = NMAPython(api_keys=args.api_keys, dev_key=args.dev_key,
         log_level=args.log_level)
     if args.subparser_name == 'verify':
